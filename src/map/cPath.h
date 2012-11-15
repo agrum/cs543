@@ -16,12 +16,13 @@ class cPath : public cLink<int> {
 
 public:
 	cPath(int, int, float);
-	cPath(const QDomElement&);
+	cPath(const QDomNode&);
 	cPath(const cPath&);
 	cPath& operator=(const cPath&);
 	bool operator==(const cPath&) const;
+	bool sameHeads(const cPath&) const;
 
-	void save(QDomElement&);
+	void save(QDomNode&);
 	bool merge(cPath);
 
 private:

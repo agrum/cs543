@@ -25,6 +25,7 @@ public:
 private:
 	QList<cPath> expand(const QList<cPath>&, const QList<cPath>&);
 	void save(const QString&);
+	void show() const;
 
 private:
 	int m_nodes;

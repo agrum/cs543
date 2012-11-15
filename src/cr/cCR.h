@@ -15,12 +15,14 @@ class cCR : public QThread {
 
 public:
 	cCR();
+	cCR(const cCR&);
+	cCR& operator=(const cCR&);
 
 	static void setLabel(int);
 	void setPathList(const QList<cLink<cCR*> >&);
 
-	float fractDistanceOptimal() { return m_fractDistanceOptimal; }
-	float fractDistanceFinal() { return m_fractDistanceFinal; }
+	float fractDistanceOptimal() const { return m_fractDistanceOptimal; }
+	float fractDistanceFinal() const { return m_fractDistanceFinal; }
 
 	virtual void run() = 0;
 

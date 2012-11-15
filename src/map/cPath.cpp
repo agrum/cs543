@@ -13,7 +13,7 @@ cLink<int>(p_0, p_1, p_distance)
 
 }
 
-cPath::cPath(const QDomElement& p_node){
+cPath::cPath(const QDomNode& p_node){
 	QDomNode nn = p_node.firstChild();
 	while(!nn.isNull()) {
 		QDomElement ee = nn.toElement();
@@ -41,6 +41,10 @@ cPath& cPath::operator=(const cPath& p_path){
 }
 
 bool cPath::operator==(const cPath& p_path) const{
+	return m_nodeList == p_path.m_nodeList;
+}
+
+bool cPath::sameHeads(const cPath& p_path) const{
 	return ((m_nodeList.first() == p_path.m_nodeList.first()
 			&& m_nodeList.last() == p_path.m_nodeList.last())
 			||
@@ -48,14 +52,14 @@ bool cPath::operator==(const cPath& p_path) const{
 			&& m_nodeList.last() == p_path.m_nodeList.first()));
 }
 
-void cPath::save(QDomElement& p_node){
+void cPath::save(QDomNode& p_node){
 	QDomDocument doc = p_node.toDocument();
 	QDomElement sub;
 	QDomElement tag = doc.createElement("Path");
 	p_node.appendChild(tag);
 
 	sub = doc.createElement("Length");
-	p_node.appendChild(sub);
+	tag.appendChild(sub);
 	sub.appendChild(doc.createTextNode(QString("%1")
 			.arg(m_distance)));
 
@@ -64,6 +68,7 @@ void cPath::save(QDomElement& p_node){
 		p_node.appendChild(sub);
 		sub.appendChild(doc.createTextNode(QString("%1")
 				.arg(m_nodeList[i])));
+		tag.appendChild(sub);
 	}
 }
 

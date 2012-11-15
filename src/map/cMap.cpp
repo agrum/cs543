@@ -20,7 +20,7 @@ m_nodes(p_nodes)
 	qsrand(p_seed);
 	for(unsigned int i = 0; i < p_nodes; i++)
 		nodeList.push_back(QVector3D (qrand()%1000, qrand()%1000, qrand()%1000));
-	//Unitary path
+	//Unitary pathes
 	for(unsigned int i = 0; i < p_nodes-1; i++){
 		int toAdd = 1+qrand()%3;
 		linkMap.clear();
@@ -43,6 +43,8 @@ m_nodes(p_nodes)
 		for(int j = i+1; j < m_pathList.size(); j++)
 			if(m_pathList[j].distance() < m_pathList[i].distance())
 				m_pathList.swap(i, j);
+	//Result
+	//show();
 	//Write conf file
 	QString name = QString("Map_%1_%2_%3")
 			.arg(p_seed)
@@ -77,6 +79,9 @@ cMap::cMap(const QString& p_name){
 		}
 		n = n.nextSibling();
 	}
+
+	//Result
+	//show();
 }
 
 int cMap::size() const {
@@ -111,13 +116,26 @@ QList<cPath> cMap::expand(const QList<cPath>& p_unit, const QList<cPath>& p_long
 	}
 
 	//List of replica
+	for(int i = 0; i < rtn.size()-1; i++){
+		for(int j = i+1; j < rtn.size(); j++){
+			if(rtn[i].sameHeads(rtn[j])){
+				if(rtn[i].distance() < rtn[j].distance())
+					toRemoveNew.append(rtn[j]);
+				else
+					toRemoveNew.append(rtn[i]);
+			}
+		}
+	}
+	while(!toRemoveNew.empty())
+		rtn.removeOne(toRemoveNew.takeFirst());
+
 	for(int i = 0; i < m_pathList.size(); i++){
 		for(int j = 0; j < rtn.size(); j++){
-			if(m_pathList[i] == rtn[j]){
+			if(m_pathList[i].sameHeads(rtn[j])){
 				if(m_pathList[i].distance() < rtn[j].distance())
 					toRemoveNew.append(rtn[j]);
 				else
-					toRemoveOld.append(rtn[j]);
+					toRemoveOld.append(m_pathList[i]);
 			}
 		}
 	}
@@ -151,4 +169,14 @@ void cMap::save(const QString& p_name){
 
 	QString xml = doc.toString();
 	file.write(xml.toAscii());
+}
+
+void cMap::show() const {
+	for(int i = 0; i < m_pathList.size(); i++)
+		qDebug()
+		<< i
+		<< m_pathList[i].distance()
+		<< m_pathList[i].nodeList().first()
+		<< m_pathList[i].nodeList().last();
+	qDebug() << m_pathList.size();
 }

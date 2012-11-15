@@ -2,7 +2,8 @@ TEMPLATE = app
 TARGET = cs543CIC
 QT += core \
     xml
-HEADERS += src/map/cMap.h \
+HEADERS += src/cr/cCR_TMP.h \
+    src/map/cMap.h \
     src/cr/cCR.h \
     src/cNetwork.h \
     src/map/cPath.h \
