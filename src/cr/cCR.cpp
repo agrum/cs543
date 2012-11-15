@@ -12,7 +12,8 @@ int cCR::m_label = 1;
 cCR::cCR():
 m_fractDistanceOptimal(0),
 m_fractDistanceFinal(0),
-m_phase(-1)
+m_phase(-1),
+m_configured(false)
 {
 
 }
@@ -23,7 +24,8 @@ m_pathListOptimal(p_cr.m_pathListOptimal),
 m_pathListFinal(p_cr.m_pathListFinal),
 m_fractDistanceOptimal(p_cr.m_fractDistanceOptimal),
 m_fractDistanceFinal(p_cr.m_fractDistanceFinal),
-m_phase(p_cr.m_phase)
+m_phase(p_cr.m_phase),
+m_configured(false)
 {
 
 }
@@ -35,6 +37,7 @@ cCR& cCR::operator=(const cCR& p_cr){
 	m_fractDistanceOptimal = p_cr.m_fractDistanceOptimal;
 	m_fractDistanceFinal = p_cr.m_fractDistanceFinal;
 	m_phase = p_cr.m_phase;
+	m_configured = p_cr.m_configured;
 }
 
 void cCR::setLabel(int p_label){

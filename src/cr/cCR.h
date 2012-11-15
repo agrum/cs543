@@ -21,6 +21,7 @@ public:
 	static void setLabel(int);
 	void setPathList(const QList<cLink<cCR*> >&);
 
+	bool configured() const { return m_configured; }
 	float fractDistanceOptimal() const { return m_fractDistanceOptimal; }
 	float fractDistanceFinal() const { return m_fractDistanceFinal; }
 
@@ -35,6 +36,7 @@ protected:
 	float m_fractDistanceOptimal;
 	float m_fractDistanceFinal;
 	int m_phase;
+	bool m_configured;
 };
 
 #endif /* CCR_H_ */

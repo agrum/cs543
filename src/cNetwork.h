@@ -55,20 +55,35 @@ void cNetwork<T>::configure(){
 
 template <class T>
 void cNetwork<T>::result(){
-	float averageFract = 0;
+	float worstFract = 0;
+	float worstFractRatio = 0;
+	float averageFractRatio = 0;
 	int optimized = 0;
 
 	for(int i = 0; i < m_crList.size(); i++){
+		while(!m_crList[i].configured()){
+			qDebug() << "Configuration in progress";
+			sleep(1);
+		}
+
 		float fractOptimalTmp = m_crList[i].fractDistanceOptimal();
 		float fractFinalTmp = m_crList[i].fractDistanceFinal();
-		averageFract += fractFinalTmp/fractOptimalTmp;
+		float fractRatio = fractFinalTmp/fractOptimalTmp;
+
+		averageFractRatio += fractRatio;
 		if(fractFinalTmp == fractOptimalTmp)
 			optimized++;
+		if(fractFinalTmp > worstFract)
+			worstFract = fractFinalTmp;
+		if(fractRatio > worstFractRatio)
+			worstFractRatio = fractRatio;
 	}
-	averageFract /= m_crList.size();
+	averageFractRatio /= m_crList.size();
 
-	qDebug() << "Average ratio :" << averageFract;
-	qDebug() << "Optimized CR :" << optimized;
+	qDebug() << "Average ratio :" << averageFractRatio;
+	qDebug() << "Optimized CR  :" << optimized;
+	qDebug() << "Worst ratio   :" << worstFractRatio;
+	qDebug() << "Worst fract   :" << worstFract;
 }
 
 #endif /* CCRLIST_H_ */

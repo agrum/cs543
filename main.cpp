@@ -15,12 +15,11 @@ int main(int argc, char *argv[])
 	QApplication a(argc, argv);
 
 	cCR::setLabel(5);
-	cMap map(3, 20, 10);
-	//cMap map("Map_3_20_10.conf");
+	//cMap map(0, 100, 10);
+	cMap map("Map_0_100_10.conf");
 	cNetwork<cCR_CIC> network(map);
 
 	network.configure();
-	sleep(2);
 	network.result();
 
 	return a.exec();

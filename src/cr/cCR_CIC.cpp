@@ -57,6 +57,7 @@ void cCR_CIC::run() {
 		LAP2();
 
 	final();
+	m_configured = true;
 }
 
 void cCR_CIC::receiveFractDist(const cCR_CIC* p_cr){
