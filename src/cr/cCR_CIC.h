@@ -13,9 +13,15 @@
 class cCR_CIC : public cCR {
 
 public:
+	enum state{
+		NONE,
+		SAVED,
+		OPTIMIZED
+	};
+
 	cCR_CIC();
 
-	void run();
+	virtual void run();
 
 	void configureOptimal();
 	void configurePhase();
@@ -25,7 +31,7 @@ public:
 private:
 	QList<cCR_CIC*> m_subNet;
 	QList<cCR_CIC*> m_neighborhood;
-	int m_confLvl;
+	int m_state;
 };
 
 #endif /* CCR_CIC_H_ */

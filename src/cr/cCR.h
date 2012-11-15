@@ -14,18 +14,10 @@
 class cCR : public QThread {
 
 public:
-	enum state{
-		NONE,
-		SAVED,
-		OPTIMIZED
-	};
-
 	cCR();
 
 	static void setLabel(int);
-
-	void zero();
-	void setPathList();
+	void setPathList(const QList<cLink<cCR*> >&);
 
 	float fractDistanceOptimal() { return m_fractDistanceOptimal; }
 	float fractDistanceFinal() { return m_fractDistanceFinal; }
@@ -35,13 +27,12 @@ public:
 protected:
 	static int m_label;
 
-	QList<cPath* > m_pathList;
-	QList<cPath* > m_pathListOptimal;
-	QList<cPath* > m_pathListFinal;
+	QList<cLink<cCR*> > m_pathList;
+	QList<cLink<cCR*> > m_pathListOptimal;
+	QList<cLink<cCR*> > m_pathListFinal;
 	float m_fractDistanceOptimal;
 	float m_fractDistanceFinal;
 	int m_phase;
-	int m_state;
 };
 
 #endif /* CCR_H_ */

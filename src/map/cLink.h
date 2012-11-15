@@ -10,18 +10,74 @@
 
 #include <QDebug>
 
+template <class T>
 class cLink {
 
 public:
-	cLink(void*, void*, float);
+	cLink();
+	cLink(T, T, float);
+	cLink(const cLink&);
+	cLink& operator=(const cLink&);
+	bool operator==(const cLink&) const;
 
-	void* opposite(void*) const;
+	const T& opposite(const T&) const;
 	float distance() const;
 
-private:
-	void* m_0;
-	void* m_1;
+protected:
+	QList<T> m_nodeList;
 	float m_distance;
 };
+
+template <class T>
+cLink<T>::cLink(){
+	m_distance = 0;
+}
+
+template <class T>
+cLink<T>::cLink(T p_0, T p_1, float p_distance)
+{
+	m_nodeList.append(p_0);
+	m_nodeList.append(p_1);
+	m_distance = p_distance;
+}
+
+template <class T>
+cLink<T>::cLink(const cLink& p_link) :
+m_nodeList(p_link.m_nodeList),
+m_distance(p_link.m_distance)
+{
+
+}
+
+template <class T>
+cLink<T>& cLink<T>::operator=(const cLink& p_link){
+	m_nodeList = p_link.m_nodeList;
+	m_distance = p_link.m_distance;
+
+	return *this;
+}
+
+template <class T>
+bool cLink<T>::operator==(const cLink& p_path) const{
+	return ((m_nodeList.first() == p_path.m_nodeList.first()
+			&& m_nodeList.last() == p_path.m_nodeList.last())
+			||
+			(m_nodeList.first() == p_path.m_nodeList.last()
+			&& m_nodeList.last() == p_path.m_nodeList.first()));
+}
+
+template <class T>
+const T& cLink<T>::opposite(const T& p_01) const {
+	if(p_01 == m_nodeList.first())
+		return m_nodeList.last();
+	else if(p_01 == m_nodeList.last())
+		return m_nodeList.first();
+	return p_01;
+}
+
+template <class T>
+float cLink<T>::distance() const{
+	return m_distance;
+}
 
 #endif /* CLINK_H_ */

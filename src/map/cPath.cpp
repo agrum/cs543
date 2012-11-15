@@ -7,186 +7,108 @@
 
 #include "cPath.h"
 
-QList<QList<cPath*> > cPath::m_pathList;
-
-cPath::cPath(float p_distance, QList<void*> p_nodeList):
-QList<void*>(p_nodeList),
-m_distance(p_distance),
-m_lvl(p_nodeList.size()-1)
+cPath::cPath(int p_0, int p_1, float p_distance):
+cLink<int>(p_0, p_1, p_distance)
 {
 
 }
 
-cPath::cPath(const cLink* p_link):
-m_distance(p_link->distance()),
-m_lvl(1)
-{
-	push_back(p_link->opposite(NULL));
-	push_back(p_link->opposite(at(0)));
-}
-
-cPath::cPath(const cPath* p_path0, const cPath* p_path1):
-m_distance(p_path0->m_distance + p_path1->m_distance),
-m_lvl(p_path0->m_lvl + p_path1->m_lvl)
-{
-	QList<void*> tmp;
-
-	if(p_path0->last() == p_path1->first() || p_path0->last() == p_path1->last()){
-		tmp = *p_path1;
-		if(p_path0->last() == p_path1->last())
-			for(int i = 0; i < tmp.size()/2; i++)
-				tmp.swap(i, tmp.size()-1-i);
-		tmp.removeFirst();
-		append(*p_path0);
-		append(tmp);
-	}
-	else if(p_path0->first() == p_path1->last() || p_path0->first() == p_path1->first()){
-		tmp = *p_path1;
-		if(p_path0->first() == p_path1->first())
-			for(int i = 0; i < tmp.size()/2; i++)
-				tmp.swap(i, tmp.size()-1-i);
-		tmp.removeLast();
-		append(tmp);
-		append(*p_path0);
+cPath::cPath(const QDomElement& p_node){
+	QDomNode nn = p_node.firstChild();
+	while(!nn.isNull()) {
+		QDomElement ee = nn.toElement();
+		if(!ee.isNull()) {
+			if(ee.tagName() == "Node")
+				m_nodeList.append(ee.text().toInt());
+			else if(ee.tagName() == "Length")
+				m_distance = ee.text().toFloat();
+		}
+		nn = nn.nextSibling();
 	}
 }
 
-float cPath::distance() const {
-	return m_distance;
+cPath::cPath(const cPath& p_path):
+cLink<int>(p_path)
+{
+
 }
 
-float cPath::level() const {
-	return m_lvl;
+cPath& cPath::operator=(const cPath& p_path){
+	m_nodeList = p_path.m_nodeList;
+	m_distance = p_path.m_distance;
+
+	return *this;
 }
 
-void* cPath::opposite(void* p_01) const {
-	return (first() == p_01) ? last() : first();
+bool cPath::operator==(const cPath& p_path) const{
+	return ((m_nodeList.first() == p_path.m_nodeList.first()
+			&& m_nodeList.last() == p_path.m_nodeList.last())
+			||
+			(m_nodeList.first() == p_path.m_nodeList.last()
+			&& m_nodeList.last() == p_path.m_nodeList.first()));
 }
 
-void cPath::init(unsigned int p_expand, const QList<cLink*>& p_list){
-	QList<cPath*> lvlOne;
+void cPath::save(QDomElement& p_node){
+	QDomDocument doc = p_node.toDocument();
+	QDomElement sub;
+	QDomElement tag = doc.createElement("Path");
+	p_node.appendChild(tag);
 
-	m_pathList.clear();
-	m_pathList.push_back(lvlOne);
+	sub = doc.createElement("Length");
+	p_node.appendChild(sub);
+	sub.appendChild(doc.createTextNode(QString("%1")
+			.arg(m_distance)));
 
-	for(int i = 0; i < p_list.size(); i++)
-		m_pathList[0].push_back(new cPath(p_list[i]));
-
-	for(unsigned int e = 0; e < p_expand; e++)
-		expand();
-
-	while(m_pathList.size() > 1)
-		m_pathList[0].append(m_pathList.takeAt(1));
-
-	order();
-
-	/*for(int i = 0; i < m_pathList[0].size(); i++)
-		qDebug() << m_pathList[0][i]->m_lvl
-		<< m_pathList[0][i]->m_distance;
-
-	qDebug() << m_pathList[0].size();*/
+	for(int i = 0; i < m_nodeList.size(); i++){
+		sub = doc.createElement("Node");
+		p_node.appendChild(sub);
+		sub.appendChild(doc.createTextNode(QString("%1")
+				.arg(m_nodeList[i])));
+	}
 }
 
-void cPath::init(const QList<QPair<float, QList<void*> > >& p_pathList){
-	QList<cPath*> lvlOne;
-	m_pathList.push_back(lvlOne);
-
-	for(int i = 0; i < p_pathList.size(); i++)
-		m_pathList[0].push_back(new cPath(p_pathList[i].first, p_pathList[i].second));
-
-	/*for(int i = 0; i < m_pathList[0].size(); i++)
-			qDebug() << m_pathList[0][i]->m_lvl
-			<< m_pathList[0][i]->m_distance;
-
-	qDebug() << m_pathList[0].size();*/
-}
-
-QList<cPath*> cPath::getList(void* p_node) {
-	QList<cPath*> rtn;
-
-	if(p_node == NULL)
-		return m_pathList[0];
-
-	for(int i = 0; i < m_pathList[0].size(); i++)
-		if(m_pathList[0][i]->first() == p_node || m_pathList[0][i]->last() == p_node)
-			rtn.push_back(m_pathList[0][i]);
-
-	return rtn;
-}
-
-void cPath::clear(){
-	m_pathList.clear();
-}
-
-bool cPath::canJoin(const cPath* p_path){
-	if(this == p_path)
+bool cPath::merge(cPath p_path){
+	if(!canMerge(p_path))
 		return false;
 
-	QList<void*> tmp;
-	if(last() == p_path->first() || last() == p_path->last()){
-		tmp = *this;
-		tmp.removeLast();
+	m_distance += p_path.distance();
+	if(m_nodeList.last() == p_path.m_nodeList.first()){
+		p_path.m_nodeList.removeFirst();
+		m_nodeList = m_nodeList + p_path.m_nodeList;
 	}
-	else if(first() == p_path->last() || first() == p_path->first()){
-		tmp = *this;
-		tmp.removeFirst();
+	else if(m_nodeList.first() == p_path.m_nodeList.last()){
+		p_path.m_nodeList.removeLast();
+		m_nodeList = p_path.m_nodeList + m_nodeList;
 	}
-	else
-		return false;
-
-	for(int i = 0; i < tmp.size(); i++)
-		if(p_path->contains(tmp[i]))
-			return false;
+	else if(m_nodeList.last() == p_path.m_nodeList.last()){
+		for(int i = 0; i < p_path.m_nodeList.size()/2; i++)
+			p_path.m_nodeList.swap(i, p_path.m_nodeList.size()-1-i);
+		p_path.m_nodeList.removeFirst();
+		m_nodeList = m_nodeList + p_path.m_nodeList;
+	}
+	else if(m_nodeList.first() == p_path.m_nodeList.first()){
+		for(int i = 0; i < p_path.m_nodeList.size()/2; i++)
+					p_path.m_nodeList.swap(i, p_path.m_nodeList.size()-1-i);
+		p_path.m_nodeList.removeLast();
+		m_nodeList = p_path.m_nodeList + m_nodeList;
+	}
 
 	return true;
 }
 
-bool cPath::operator==(const cPath& p_path) const{
-	return ((first() == p_path.first() && last() == p_path.last())
-			|| (first() == p_path.last() && last() == p_path.first()));
-}
+bool cPath::canMerge(cPath p_path){
+	if(m_nodeList.first() == p_path.m_nodeList.last()
+			|| m_nodeList.last() == p_path.m_nodeList.last())
+		p_path.m_nodeList.removeLast();
+	else if(m_nodeList.first() == p_path.m_nodeList.first()
+			|| m_nodeList.last() == p_path.m_nodeList.first())
+		p_path.m_nodeList.removeFirst();
+	else
+		return false;
 
-void cPath::expand(){
-	QList<QPair<int, void*> > toRemove;
-	QList<cPath*> newLvl;
-	int lastLvl = m_pathList.size() - 1;
+	for(int i = 0; i < p_path.m_nodeList.size(); i++)
+		if(m_nodeList.contains(p_path.m_nodeList[i]))
+			return false;
 
-	m_pathList.push_back(newLvl);
-	for(int i = 0; i < m_pathList[0].size(); i++){
-		for(int j = 0; j < m_pathList[lastLvl].size(); j++){
-			if(m_pathList[0][i]->canJoin(m_pathList[lastLvl][j]))
-				m_pathList[lastLvl+1].push_back(new cPath(m_pathList[0][i], m_pathList[lastLvl][j]));
-		}
-	}
-
-	for(int i = 0; i < m_pathList.size(); i++){
-		for(int j = 0; j < m_pathList[i].size(); j++){
-			for(int k = (i == lastLvl+1) ? j+1 : 0; k < m_pathList[lastLvl+1].size(); k++){
-				if((m_pathList[i][j] != m_pathList[lastLvl+1][k])
-						&& (*(m_pathList[i][j]) == *(m_pathList[lastLvl+1][k]))){
-					QPair<int, void*> tmp;
-					if(m_pathList[i][j]->distance() < m_pathList[lastLvl+1][k]->distance())
-						tmp = QPair<int, void*> (lastLvl+1, m_pathList[lastLvl+1][k]);
-					else
-						tmp = QPair<int, void*> (i, m_pathList[i][j]);
-					if(!toRemove.contains(tmp))
-						toRemove.push_back(tmp);
-				}
-			}
-		}
-	}
-
-	while(!toRemove.empty()){
-		QPair<int, void*> tmp = toRemove.takeFirst();
-		m_pathList[tmp.first].removeOne((cPath*) tmp.second);
-	}
-
-}
-
-void cPath::order(){
-	int pathListSize = m_pathList[0].size();
-	for(int i = 0; i < pathListSize; i++)
-		for(int j = i; j < pathListSize; j++)
-			if(m_pathList[0][j]->distance() < m_pathList[0][i]->distance())
-				m_pathList[0].swap(i, j);
+	return true;
 }

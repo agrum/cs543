@@ -12,8 +12,7 @@ int cCR::m_label = 1;
 cCR::cCR():
 m_fractDistanceOptimal(0),
 m_fractDistanceFinal(0),
-m_phase(-1),
-m_state(0)
+m_phase(-1)
 {
 
 }
@@ -22,16 +21,9 @@ void cCR::setLabel(int p_label){
 	m_label = p_label;
 }
 
-void cCR::zero(){
-	m_pathList.clear();
-	m_pathListOptimal.clear();
-	m_pathListFinal.clear();
-	m_fractDistanceOptimal = 0;
-	m_fractDistanceFinal = 0;
-	m_phase = -1;
-	m_state = NONE;
-}
-
-void cCR::setPathList(){
-	m_pathList = cPath::getList(this);
+void cCR::setPathList(const QList<cLink<cCR*> >& p_linkList){
+	m_pathList = p_linkList;
+	m_pathListOptimal = m_pathList.mid(0, m_label-1);
+	for(int i = 0; i < m_pathListOptimal.size(); i++)
+		m_fractDistanceOptimal += m_pathListOptimal[i].distance();
 }
