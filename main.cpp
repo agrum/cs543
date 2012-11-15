@@ -8,7 +8,7 @@
 #include <QtCore>
 #include <QApplication>
 #include "src/cNetwork.h"
-#include "src/cr/cCR_TMP.h"
+#include "src/cr/cCR_CIC.h"
 
 int main(int argc, char *argv[])
 {
@@ -17,7 +17,7 @@ int main(int argc, char *argv[])
 	cCR::setLabel(5);
 	cMap map(3, 20, 10);
 	//cMap map("Map_3_20_10.conf");
-	cNetwork<cCR_TMP> network(map);
+	cNetwork<cCR_CIC> network(map);
 
 	network.configure();
 	sleep(2);
