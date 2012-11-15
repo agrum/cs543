@@ -21,6 +21,7 @@ public:
 	cNetwork(const cMap&);
 
 	void configure();
+	void result();
 
 private:
 	QList<T> m_crList;
@@ -49,7 +50,25 @@ cNetwork<T>::cNetwork(const cMap& p_map){
 template <class T>
 void cNetwork<T>::configure(){
 	for(int i = 0; i < m_crList.size(); i++)
-		m_crList[i].run();
+		m_crList[i].start();
+}
+
+template <class T>
+void cNetwork<T>::result(){
+	float averageFract = 0;
+	int optimized = 0;
+
+	for(int i = 0; i < m_crList.size(); i++){
+		float fractOptimalTmp = m_crList[i].fractDistanceOptimal();
+		float fractFinalTmp = m_crList[i].fractDistanceFinal();
+		averageFract += fractFinalTmp/fractOptimalTmp;
+		if(fractFinalTmp == fractOptimalTmp)
+			optimized++;
+	}
+	averageFract /= m_crList.size();
+
+	qDebug() << "Average ratio :" << averageFract;
+	qDebug() << "Optimized CR :" << optimized;
 }
 
 #endif /* CCRLIST_H_ */

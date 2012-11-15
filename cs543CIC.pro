@@ -8,7 +8,8 @@ HEADERS += src/cr/cCR_TMP.h \
     src/cNetwork.h \
     src/map/cPath.h \
     src/map/cLink.h
-SOURCES += src/map/cMap.cpp \
+SOURCES += src/cr/cCR_TMP.cpp \
+    src/map/cMap.cpp \
     main.cpp \
     src/cr/cCR.cpp \
     src/map/cPath.cpp
