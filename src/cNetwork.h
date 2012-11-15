@@ -13,23 +13,33 @@
 #include "map/cMap.h"
 #include "map/cLink.h"
 #include "cr/cCR.h"
+#include "traffic/cTraffic.h"
+#include "traffic/cRequest.h"
 
 template <class T>
-class cNetwork {
+class cNetwork : public QThread {
 
 public:
-	cNetwork(const cMap&, int, int);
+	cNetwork(const cMap&, const cTraffic&, int, int);
 
+	void run();
+
+private:
 	void configure();
 	void result();
+	void genTraffic();
 
 private:
 	QList<T> m_crList;
 	QList<cCR*> m_crInput;
+
+	const cTraffic& m_traffic;
 };
 
 template <class T>
-cNetwork<T>::cNetwork(const cMap& p_map, int p_in, int p_out){
+cNetwork<T>::cNetwork(const cMap& p_map, const cTraffic& p_traffic, int p_in, int p_out):
+m_traffic(p_traffic)
+{
 	QList<cCR*> crAddrList;
 	QList<cCR*> crOutput;
 
@@ -66,6 +76,14 @@ cNetwork<T>::cNetwork(const cMap& p_map, int p_in, int p_out){
 
 		m_crList[i].setPathList(linkList);
 	}
+}
+
+
+template <class T>
+void cNetwork<T>::run(){
+	configure();
+	result();
+	genTraffic();
 }
 
 template <class T>
@@ -109,6 +127,45 @@ void cNetwork<T>::result(){
 	qDebug() << "Average fract :" << averageFractRatio;
 	qDebug() << "Worst ratio   :" << worstFractRatio;
 	qDebug() << "Worst fract   :" << worstFract;
+}
+
+template <class T>
+void cNetwork<T>::genTraffic(){
+	QList<QList<cRequest*> > requestList;
+
+	qsrand(0);
+	while(true){
+		int index = qrand()%m_crInput.size();
+		QPair<int, int> stream = m_traffic.genTraffic();
+		QList<cRequest*> requestFlow;
+
+		//New bunch of requests
+		for(int i = 0; i < stream.second; i++){
+			cRequest* request = new cRequest(
+					m_crInput[index],
+					QPair<int, int> (stream.first, i));
+			requestFlow.push_back(request);
+		}
+		if(requestFlow.size() > 0){
+			requestFlow[0]->start();
+			requestList.push_back(requestFlow);
+		}
+
+		//Manage old requests
+		for(int i = 0; i < requestList.size(); i++){
+			requestFlow = requestList[i];
+			if(requestFlow[0]->isFinished()){
+				delete requestFlow.takeFirst();
+				if(requestFlow.size() > 0)
+					requestFlow[0]->start();
+				else
+					requestList.removeAt(i--);
+			}
+
+		}
+
+		msleep(100);
+	}
 }
 
 #endif /* CCRLIST_H_ */

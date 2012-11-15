@@ -18,10 +18,10 @@ int main(int argc, char *argv[])
 	cCR::setCapacity(5);
 	//cMap map(0, 100, 10);
 	cMap map("Map_0_100_10.conf");
-	cNetwork<cCR_CIC> network(map, 7, 4);
+	cTraffic traffic(5, 5);
+	cNetwork<cCR_CIC> network(map, traffic, 7, 4);
 
-	network.configure();
-	network.result();
+	network.start();
 
 	return a.exec();
 }
