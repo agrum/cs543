@@ -19,7 +19,7 @@ m_configured(false)
 }
 
 cCR::cCR(const cCR& p_cr):
-QThread(p_cr),
+QThread(),
 m_pathList(p_cr.m_pathList),
 m_pathListOptimal(p_cr.m_pathListOptimal),
 m_pathListFinal(p_cr.m_pathListFinal),
