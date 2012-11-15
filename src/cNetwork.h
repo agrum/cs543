@@ -60,7 +60,7 @@ m_traffic(p_traffic)
 	}
 	for(int i = 0; i < p_out; i++){
 		int index = qrand()%m_crList.size();
-		while(crOutput.contains(&m_crList[index]))
+		while(crOutput.contains(&m_crList[index]) || m_crInput.contains(&m_crList[index]))
 			index = qrand()%m_crList.size();
 		m_crList[index].setType(cCR::OUTPUT);
 		crOutput.push_back(&m_crList[index]);
@@ -153,15 +153,14 @@ void cNetwork<T>::genTraffic(){
 
 		//Manage old requests
 		for(int i = 0; i < requestList.size(); i++){
-			requestFlow = requestList[i];
-			if(requestFlow[0]->isFinished()){
-				delete requestFlow.takeFirst();
-				if(requestFlow.size() > 0)
-					requestFlow[0]->start();
+			QList<cRequest*>& requestFlowTmp = requestList[i];
+			if(requestFlowTmp[0]->isFinished()){
+				delete requestFlowTmp.takeFirst();
+				if(requestFlowTmp.size() > 0)
+					requestFlowTmp[0]->start();
 				else
 					requestList.removeAt(i--);
 			}
-
 		}
 
 		msleep(100);

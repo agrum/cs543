@@ -77,34 +77,32 @@ void cCR::setPathList(const QList<cLink<cCR*> >& p_linkList){
 				m_exit = pathToExit[1];
 			else
 				m_exit = pathToExit[pathToExit.size()-2];
+			exitFound = true;
 		}
 	}
 }
 
 bool cCR::request(const cCR* p_input, const QPair<int, int>& p_chunk, bool p_in){
+	//qDebug() << this << m_exit << m_type << p_in << p_chunk;
 	if(p_in){ //Search in the network
 		if(p_chunk.second%m_label == m_phase) //Good phase, look for chunk
 			if(m_storage.contains(p_chunk)){
-				m_mutex.lock();
-				m_storage.removeOne(p_chunk);
-				m_storage.push_back(p_chunk);
-				m_mutex.unlock();
-				crFor(p_input)->response(p_input, p_chunk);
+				this->response(p_input, p_chunk);
 				return true;
 			}
-			else{
-				return m_exit->request(p_input, p_chunk, false);
-			}
+			else
+				p_in = false;
 		else //Find good phase in network
-			return crForPhase(p_chunk.second%m_label)->request(p_input, p_chunk, p_in);
+			return crForPhase(p_chunk.second%m_label)->request(p_input, p_chunk, true);
 	}
-	else{ //Not found in network, go find outside
-		if(!m_exit) //It's the exit, so return the response
+	if(!p_in){ //Not found in network, go find outside
+		if(m_exit == NULL) //It's the exit, so return the response
 			crFor(p_input)->response(p_input, p_chunk);
-		else //Continue to the exit
-			m_exit->request(p_input, p_chunk, p_in);
+		else  //Continue to the exit
+			m_exit->request(p_input, p_chunk, false);
 		return false;
 	}
+	return false;
 }
 
 void cCR::response(const cCR* p_input, const QPair<int, int>& p_chunk){
@@ -112,6 +110,8 @@ void cCR::response(const cCR* p_input, const QPair<int, int>& p_chunk){
 		m_mutex.lock();
 		m_storage.removeOne(p_chunk);
 		m_storage.push_back(p_chunk);
+		if(m_storage.size() > m_capacity)
+			m_storage.removeFirst();
 		m_mutex.unlock();
 	}
 	if(this != p_input)
