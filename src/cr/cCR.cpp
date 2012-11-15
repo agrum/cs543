@@ -19,6 +19,7 @@ m_configured(false)
 }
 
 cCR::cCR(const cCR& p_cr):
+QThread(p_cr),
 m_pathList(p_cr.m_pathList),
 m_pathListOptimal(p_cr.m_pathListOptimal),
 m_pathListFinal(p_cr.m_pathListFinal),
@@ -38,6 +39,8 @@ cCR& cCR::operator=(const cCR& p_cr){
 	m_fractDistanceFinal = p_cr.m_fractDistanceFinal;
 	m_phase = p_cr.m_phase;
 	m_configured = p_cr.m_configured;
+
+	return *this;
 }
 
 void cCR::setLabel(int p_label){
