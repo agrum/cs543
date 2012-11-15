@@ -18,24 +18,45 @@ template <class T>
 class cNetwork {
 
 public:
-	cNetwork(const cMap&);
+	cNetwork(const cMap&, int, int);
 
 	void configure();
 	void result();
 
 private:
 	QList<T> m_crList;
+	QList<cCR*> m_crInput;
 };
 
 template <class T>
-cNetwork<T>::cNetwork(const cMap& p_map){
+cNetwork<T>::cNetwork(const cMap& p_map, int p_in, int p_out){
 	QList<cCR*> crAddrList;
+	QList<cCR*> crOutput;
 
+	//Init CR List
 	for(int i = 0; i < p_map.size(); i++){
 		m_crList.push_back(T ());
 		crAddrList.push_back(&(m_crList.last()));
 	}
 
+	//Init input/output CRs
+	qsrand(0);
+	for(int i = 0; i < p_in; i++){
+		int index = qrand()%m_crList.size();
+		while(m_crInput.contains(&m_crList[index]))
+			index = qrand()%m_crList.size();
+		m_crList[index].setType(cCR::INPUT);
+		m_crInput.push_back(&m_crList[index]);
+	}
+	for(int i = 0; i < p_out; i++){
+		int index = qrand()%m_crList.size();
+		while(crOutput.contains(&m_crList[index]))
+			index = qrand()%m_crList.size();
+		m_crList[index].setType(cCR::OUTPUT);
+		crOutput.push_back(&m_crList[index]);
+	}
+
+	//Init pathes from map
 	for(int i = 0; i < p_map.size(); i++){
 		QList<cLink<cCR*> > linkList;
 		QList<cPath> pathList = p_map.pathList(i);
