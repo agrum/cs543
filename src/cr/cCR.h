@@ -10,6 +10,7 @@
 
 #include "../map/cPath.h"
 #include <QThread>
+#include <QMutex>
 
 class cCR : public QThread {
 
@@ -53,6 +54,7 @@ protected:
 	QList<cLink<cCR*> > m_pathListFinal;
 	cCR* m_exit;
 	QList<QPair<int, int> > m_storage;
+	QMutex m_mutex;
 	float m_fractDistanceOptimal;
 	float m_fractDistanceFinal;
 	int m_phase;
