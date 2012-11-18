@@ -132,6 +132,9 @@ void cNetwork<T>::result(){
 template <class T>
 void cNetwork<T>::genTraffic(){
 	QList<QList<cRequest*> > requestList;
+	float sampleMaxSize = 50;
+	float sampleSize = 0;
+	float stayedIn = 0;
 
 	qsrand(0);
 	while(true){
@@ -155,6 +158,14 @@ void cNetwork<T>::genTraffic(){
 		for(int i = 0; i < requestList.size(); i++){
 			QList<cRequest*>& requestFlowTmp = requestList[i];
 			if(requestFlowTmp[0]->isFinished()){
+				sampleSize++;
+				if(requestFlowTmp[0]->inside())
+					stayedIn++;
+				if(sampleSize == sampleMaxSize){
+					qDebug() << "Request stayed inside ratio :" << stayedIn/sampleSize;
+					sampleSize = 0;
+					stayedIn = 0;
+				}
 				delete requestFlowTmp.takeFirst();
 				if(requestFlowTmp.size() > 0)
 					requestFlowTmp[0]->start();

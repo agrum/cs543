@@ -37,7 +37,7 @@ private:
 	void LAP2();
 	void final();
 
-private:
+protected:
 	int m_state;
 	QMutex m_mutex;
 	QSet<const cCR*> m_waitingRelease;

@@ -31,8 +31,8 @@ public:
 	void setType(int);
 	void setPathList(const QList<cLink<cCR*> >&);
 
-	bool request(const cCR*, const QPair<int, int>&, bool);
-	void response(const cCR*, const QPair<int, int>&);
+	virtual bool request(const cCR*, const QPair<int, int>&, bool);
+	virtual void response(const cCR*, const QPair<int, int>&);
 
 	float fractDistanceOptimal() const { return m_fractDistanceOptimal; }
 	float fractDistanceFinal() const { return m_fractDistanceFinal; }
