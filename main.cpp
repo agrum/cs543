@@ -9,19 +9,26 @@
 #include <QApplication>
 #include "src/cNetwork.h"
 #include "src/cr/cCR_CIC.h"
+#include "src/cr/cCR_CIC_LUP.h"
+#include "src/cr/cCR_CIC_EV.h"
 
 int main(int argc, char *argv[])
 {
 	QApplication a(argc, argv);
 
-	cCR::setLabel(5);
-	cCR::setCapacity(60);
-	//cMap map(0, 100, 10);
-	cMap map("Map_0_100_10.conf");
-	cTraffic traffic(6, 100);
-	cNetwork<cCR_CIC> network(map, traffic, 7, 4);
+	//cMap map(1, 100, 10);
+	cMap map("Map_1_100_10.conf");
 
-	network.start();
+	for(int i = 9; i < 10; i++){
+		cCR::setLabel(i);
+		qDebug() << "Label" << i;
+		for(int j = 0; j < 20; j++){
+			cNetwork<cCR_CIC> network(map);
+			network.start();
+			while(!network.isFinished())
+				sleep(1);
+		}
+	}
 
 	return a.exec();
 }

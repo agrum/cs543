@@ -8,7 +8,6 @@
 #include "cCR.h"
 
 int cCR::m_label = 1;
-int cCR::m_capacity = 0;
 
 cCR::cCR():
 m_exit(NULL),
@@ -54,10 +53,6 @@ void cCR::setLabel(int p_label){
 	m_label = p_label;
 }
 
-void cCR::setCapacity(int p_capacity){
-	m_capacity = p_capacity;
-}
-
 void cCR::setType(int p_type){
 	m_type = p_type;
 }
@@ -80,72 +75,4 @@ void cCR::setPathList(const QList<cLink<cCR*> >& p_linkList){
 			exitFound = true;
 		}
 	}
-}
-
-bool cCR::request(const cCR* p_input, const QPair<int, int>& p_chunk, bool p_in){
-	bool changed = false;
-	//qDebug() << this << m_exit << m_type << p_in << p_chunk;
-	if(p_chunk.second%m_label == m_phase){ //Good phase, look for chunk
-		m_mutex.lock();
-		if(m_storage.contains(p_chunk)){
-			m_mutex.unlock();
-			this->response(p_input, p_chunk);
-			return true;
-		}
-		else
-			changed = true;
-		m_mutex.unlock();
-	}
-	if(p_in && !changed) //Search in the network
-		return crForPhase(p_chunk.second%m_label)->request(p_input, p_chunk, true);
-	else{ //Not found in network, go find outside
-		if(m_exit == NULL) //It's the exit, so return the response
-			this->response(p_input, p_chunk);
-		else if(changed) //Go to the exit
-			return m_exit->request(this, p_chunk, false);
-		else //Go to the exit
-			return m_exit->request(p_input, p_chunk, false);
-	}
-	return false;
-}
-
-void cCR::response(const cCR* p_input, const QPair<int, int>& p_chunk){
-	if(p_chunk.second%m_label == m_phase){
-		m_mutex.lock();
-		m_storage.removeOne(p_chunk);
-		m_storage.push_back(p_chunk);
-		if(m_storage.size() > m_capacity)
-			m_storage.removeFirst();
-		m_mutex.unlock();
-	}
-	if(this != p_input)
-		crFor(p_input)->response(p_input, p_chunk);
-}
-
-cCR* cCR::crFor(const cCR* p_target) {
-	for(int i = 0; i < m_pathList.size(); i++){
-		if(m_pathList[i].opposite(this) == p_target){
-			QList<cCR*> pathToTarget = m_pathList[i].nodeList();
-			if(pathToTarget[0] == this)
-				return pathToTarget[1];
-			else
-				return pathToTarget[pathToTarget.size()-2];
-		}
-	}
-	return NULL;
-}
-
-cCR* cCR::crForPhase(int p_phase) {
-	if(m_phase == p_phase)
-		return this;
-	for(int i = 0; i < m_pathListFinal.size(); i++){
-		if(m_pathListFinal[i].opposite(this)->m_phase == p_phase){
-			QList<cCR*> pathToTarget = m_pathListFinal[i].nodeList();
-			if(pathToTarget[0] == this)
-				return pathToTarget[1];
-			else
-				return pathToTarget[pathToTarget.size()-2];
-		}
-	}
-	return NULL;
 }
