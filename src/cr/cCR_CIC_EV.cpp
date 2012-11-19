@@ -33,6 +33,7 @@ cCR_CIC_EV& cCR_CIC_EV::operator=(const cCR_CIC_EV& p_cr){
 void cCR_CIC_EV::run() {
 	for(int i = 0; i < m_pathList.size(); i++)
 		m_waitingEnding.insert(m_pathList[i].opposite(this));
+	m_mutex.unlock();
 	for(int i = 0; i < m_pathListOptimal.size(); i++)
 		((cCR_CIC_EV*) m_pathListOptimal[i].opposite(this))->receiveFractDist(this);
 	m_state = FRACTSENT;
@@ -60,9 +61,16 @@ void cCR_CIC_EV::run() {
 	m_configured = true;
 }
 
+void cCR_CIC_EV::lock(){
+	m_mutex.lock();
+}
+
 void cCR_CIC_EV::receiveFractDist(const cCR_CIC_EV* p_cr){
-	if(p_cr->m_fractDistanceOptimal < m_fractDistanceOptimal)
+	if(p_cr->m_fractDistanceOptimal < m_fractDistanceOptimal){
+		m_mutex.lock();
 		m_waitingRelease.insert(p_cr);
+		m_mutex.unlock();
+	}
 }
 
 void cCR_CIC_EV::receiveRelease(cCR* p_cr){
@@ -91,9 +99,6 @@ void cCR_CIC_EV::LAP(){
 			return;
 		}
 	}
-
-	/*for(int i = 0; i < crList.size(); i++)
-		crList[i]->m_phase = phaseList.takeFirst();*/
 
 	for(int i = 0; i < crList.size(); i++){
 		QList<int> phaseNeeded = crList[i]->need();

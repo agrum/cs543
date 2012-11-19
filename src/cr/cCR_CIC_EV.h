@@ -29,6 +29,7 @@ public:
 
 	virtual void run();
 
+	void lock();
 	void receiveFractDist(const cCR_CIC_EV*);
 	void receiveRelease(cCR*);
 

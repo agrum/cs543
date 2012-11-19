@@ -19,11 +19,11 @@ int main(int argc, char *argv[])
 	//cMap map(1, 100, 10);
 	cMap map("Map_1_100_10.conf");
 
-	for(int i = 9; i < 10; i++){
+	for(int i = 3; i < 21; i++){
 		cCR::setLabel(i);
 		qDebug() << "Label" << i;
 		for(int j = 0; j < 20; j++){
-			cNetwork<cCR_CIC> network(map);
+			cNetwork<cCR_CIC_EV> network(map);
 			network.start();
 			while(!network.isFinished())
 				sleep(1);

@@ -43,7 +43,6 @@ protected:
 	QMutex m_mutex;
 	QList<const cCR*> m_waitingRelease;
 	QList<const cCR*> m_waitingEnding;
-	int m_meh;
 };
 
 #endif /* CCR_CIC_H_ */
