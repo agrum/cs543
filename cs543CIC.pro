@@ -2,7 +2,9 @@ TEMPLATE = app
 TARGET = cs543CIC
 QT += core \
     xml
-HEADERS += src/traffic/cRequest.h \
+HEADERS += src/cr/cCR_CIC_EV.h \
+    src/cr/cCR_CIC_LUP.h \
+    src/traffic/cRequest.h \
     src/traffic/cTraffic.h \
     src/cr/cCR_CIC.h \
     src/map/cMap.h \
@@ -10,7 +12,9 @@ HEADERS += src/traffic/cRequest.h \
     src/cNetwork.h \
     src/map/cPath.h \
     src/map/cLink.h
-SOURCES += src/traffic/cRequest.cpp \
+SOURCES += src/cr/cCR_CIC_EV.cpp \
+    src/cr/cCR_CIC_LUP.cpp \
+    src/traffic/cRequest.cpp \
     src/traffic/cTraffic.cpp \
     src/cr/cCR_CIC.cpp \
     src/map/cMap.cpp \

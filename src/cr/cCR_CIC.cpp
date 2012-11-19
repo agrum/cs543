@@ -8,7 +8,8 @@
 #include "cCR_CIC.h"
 
 cCR_CIC::cCR_CIC():
-m_state(NONE)
+m_state(NONE),
+m_meh(0)
 {
 
 }
@@ -19,6 +20,7 @@ cCR(p_cr)
 	m_state = p_cr.m_state;
 	m_waitingRelease = p_cr.m_waitingRelease;
 	m_waitingEnding = p_cr.m_waitingEnding;
+	m_meh = p_cr.m_meh;
 }
 
 cCR_CIC& cCR_CIC::operator=(const cCR_CIC& p_cr){
@@ -26,30 +28,37 @@ cCR_CIC& cCR_CIC::operator=(const cCR_CIC& p_cr){
 	m_state = p_cr.m_state;
 	m_waitingRelease = p_cr.m_waitingRelease;
 	m_waitingEnding = p_cr.m_waitingEnding;
+	m_meh = p_cr.m_meh;
 
 	return *this;
 }
 
 void cCR_CIC::run() {
-	for(int i = 0; i < m_pathList.size(); i++)
-		m_waitingEnding.insert(m_pathList[i].opposite(this));
+	for(int i = 0; i < m_pathList.size(); i++){
+		m_waitingEnding.push_back(m_pathList[i].opposite(this));
+	}
+	m_mutex.unlock();
 	for(int i = 0; i < m_pathListOptimal.size(); i++)
 		((cCR_CIC*) m_pathListOptimal[i].opposite(this))->receiveFractDist(this);
 	m_state = FRACTSENT;
 
 	while(m_state != RELEASED){
-		msleep(100);
 		m_mutex.lock();
 		if(m_waitingRelease.empty())
 			m_state = RELEASED;
 		m_mutex.unlock();
+		msleep(100);
 	}
 
 	LAP();
 	for(int i = 0; i < m_pathList.size(); i++)
 		((cCR_CIC*) m_pathList[i].opposite(this))->receiveRelease(this);
 
-	while(!m_waitingEnding.empty()){
+	bool wait = true;
+	while(wait){
+		m_mutex.lock();
+		wait = !m_waitingEnding.empty();
+		m_mutex.unlock();
 		msleep(100);
 	}
 
@@ -60,15 +69,23 @@ void cCR_CIC::run() {
 	m_configured = true;
 }
 
+void cCR_CIC::lock(){
+	m_mutex.lock();
+}
+
 void cCR_CIC::receiveFractDist(const cCR_CIC* p_cr){
-	if(p_cr->m_fractDistanceOptimal < m_fractDistanceOptimal)
-		m_waitingRelease.insert(p_cr);
+	if(p_cr->m_fractDistanceOptimal < m_fractDistanceOptimal){
+		m_mutex.lock();
+		m_waitingRelease.push_back(p_cr);
+		m_mutex.unlock();
+	}
 }
 
 void cCR_CIC::receiveRelease(const cCR* p_cr){
 	m_mutex.lock();
-	m_waitingRelease.remove(p_cr);
-	m_waitingEnding.remove(p_cr);
+	m_waitingRelease.removeOne(p_cr);
+	m_meh++;
+	if(!m_waitingEnding.removeOne(p_cr)) qDebug() << m_meh << p_cr << m_waitingEnding;
 	m_mutex.unlock();
 }
 

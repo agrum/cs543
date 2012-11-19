@@ -83,11 +83,13 @@ template <class T>
 void cNetwork<T>::run(){
 	configure();
 	result();
-	genTraffic();
+	//genTraffic();
 }
 
 template <class T>
 void cNetwork<T>::configure(){
+	for(int i = 0; i < m_crList.size(); i++)
+		m_crList[i].lock();
 	for(int i = 0; i < m_crList.size(); i++)
 		m_crList[i].start();
 }
@@ -98,11 +100,12 @@ void cNetwork<T>::result(){
 	float worstFractRatio = 0;
 	float averageFract = 0;
 	float averageFractRatio = 0;
+	float optimalFract = 0;
 	int optimized = 0;
 
 	for(int i = 0; i < m_crList.size(); i++){
 		while(!m_crList[i].configured()){
-			qDebug() << "Configuration in progress";
+			//qDebug() << "Configuration in progress";
 			sleep(1);
 		}
 
@@ -110,6 +113,7 @@ void cNetwork<T>::result(){
 		float fractFinalTmp = m_crList[i].fractDistanceFinal();
 		float fractRatio = fractFinalTmp/fractOptimalTmp;
 
+		optimalFract += fractOptimalTmp;
 		averageFract += fractFinalTmp;
 		averageFractRatio += fractRatio;
 		if(fractFinalTmp == fractOptimalTmp)
@@ -119,20 +123,23 @@ void cNetwork<T>::result(){
 		if(fractRatio > worstFractRatio)
 			worstFractRatio = fractRatio;
 	}
+	optimalFract /= m_crList.size();
 	averageFract /= m_crList.size();
 	averageFractRatio /= m_crList.size();
 
-	qDebug() << "Optimized CR  :" << optimized;
-	qDebug() << "Average ratio :" << averageFract;
-	qDebug() << "Average fract :" << averageFractRatio;
-	qDebug() << "Worst ratio   :" << worstFractRatio;
-	qDebug() << "Worst fract   :" << worstFract;
+	qDebug() << averageFractRatio;
+	//qDebug() << "Optimized CR  :" << optimized;
+	//qDebug() << "Optimial fract  :" << optimalFract;
+	//qDebug() << "Average ratio :" << averageFractRatio;
+	//qDebug() << "Average fract :" << averageFract;
+	//qDebug() << "Worst ratio   :" << worstFractRatio;
+	//qDebug() << "Worst fract   :" << worstFract;
 }
 
 template <class T>
 void cNetwork<T>::genTraffic(){
 	QList<QList<cRequest*> > requestList;
-	float sampleMaxSize = 50;
+	float sampleMaxSize = 20;
 	float sampleSize = 0;
 	float stayedIn = 0;
 
@@ -162,7 +169,7 @@ void cNetwork<T>::genTraffic(){
 				if(requestFlowTmp[0]->inside())
 					stayedIn++;
 				if(sampleSize == sampleMaxSize){
-					qDebug() << "Request stayed inside ratio :" << stayedIn/sampleSize;
+					qDebug() << (int) (100.0*stayedIn/sampleSize);
 					sampleSize = 0;
 					stayedIn = 0;
 				}

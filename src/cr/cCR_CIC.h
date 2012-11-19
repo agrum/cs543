@@ -9,7 +9,7 @@
 #define CCR_CIC_H_
 
 #include "cCR.h"
-#include <QSet>
+#include <QList>
 #include <QMutex>
 
 class cCR_CIC : public cCR {
@@ -29,6 +29,7 @@ public:
 
 	virtual void run();
 
+	void lock();
 	void receiveFractDist(const cCR_CIC*);
 	void receiveRelease(const cCR*);
 
@@ -40,8 +41,9 @@ private:
 protected:
 	int m_state;
 	QMutex m_mutex;
-	QSet<const cCR*> m_waitingRelease;
-	QSet<const cCR*> m_waitingEnding;
+	QList<const cCR*> m_waitingRelease;
+	QList<const cCR*> m_waitingEnding;
+	int m_meh;
 };
 
 #endif /* CCR_CIC_H_ */

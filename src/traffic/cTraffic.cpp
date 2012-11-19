@@ -15,5 +15,5 @@ m_chunk(p_chunk)
 }
 
 QPair<int, int> cTraffic::genTraffic() const {
-	return QPair<int, int> (qrand()%m_stream, qrand()%m_chunk);
+	return QPair<int, int> ((QTime::currentTime().second()/4)%5, qrand()%m_chunk);
 }

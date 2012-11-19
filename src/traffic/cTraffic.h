@@ -9,6 +9,7 @@
 #define CTRAFFIC_H_
 
 #include <QPair>
+#include <QTime>
 
 class cTraffic {
 
