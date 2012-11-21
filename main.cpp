@@ -9,21 +9,20 @@
 #include <QApplication>
 #include "src/cNetwork.h"
 #include "src/cr/cCR_CIC.h"
-#include "src/cr/cCR_CIC_LUP.h"
-#include "src/cr/cCR_CIC_EV.h"
+#include "src/cr/cCR_CIC_SLAP.h"
 
 int main(int argc, char *argv[])
 {
 	QApplication a(argc, argv);
 
 	//cMap map(1, 100, 10);
-	cMap map("Map_1_100_10.conf");
+	cMap map("Map_0_50_10.conf");
 
-	for(int i = 3; i < 21; i++){
+	for(int i = 3; i <= 20; i++){
 		cCR::setLabel(i);
 		qDebug() << "Label" << i;
 		for(int j = 0; j < 20; j++){
-			cNetwork<cCR_CIC_EV> network(map);
+			cNetwork<cCR_CIC_SLAP> network(map);
 			network.start();
 			while(!network.isFinished())
 				sleep(1);

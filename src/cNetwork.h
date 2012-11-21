@@ -76,6 +76,8 @@ void cNetwork<T>::result(){
 	float averageFract = 0;
 	float averageFractRatio = 0;
 	float optimalFract = 0;
+	float optimalFractRatio = 0;
+	float totalAverageRatio;
 	int optimized = 0;
 
 	for(int i = 0; i < m_crList.size(); i++){
@@ -98,12 +100,14 @@ void cNetwork<T>::result(){
 		if(fractRatio > worstFractRatio)
 			worstFractRatio = fractRatio;
 	}
-	optimalFract /= m_crList.size();
+	totalAverageRatio = averageFract/optimalFract;
 	averageFract /= m_crList.size();
 	averageFractRatio /= m_crList.size();
 
-	qDebug() << averageFractRatio;
-	//qDebug() << "Optimized CR  :" << optimized;
+	qDebug() << averageFractRatio << "\t"
+			<< optimized << "\t"
+			<< totalAverageRatio << "\t"
+			<< worstFract/cCR::label();
 	//qDebug() << "Optimial fract  :" << optimalFract;
 	//qDebug() << "Average ratio :" << averageFractRatio;
 	//qDebug() << "Average fract :" << averageFract;

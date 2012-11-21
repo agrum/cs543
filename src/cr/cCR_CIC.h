@@ -17,7 +17,6 @@ class cCR_CIC : public cCR {
 public:
 	enum state{
 		NONE,
-		FRACTSENT,
 		RELEASED,
 		SAVED,
 		OPTIMIZED

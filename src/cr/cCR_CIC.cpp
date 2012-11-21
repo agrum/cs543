@@ -34,9 +34,13 @@ void cCR_CIC::run() {
 	for(int i = 0; i < m_pathList.size(); i++)
 		m_waitingEnding.push_back(m_pathList[i].opposite(this));
 	m_mutex.unlock();
-	for(int i = 0; i < m_pathListOptimal.size(); i++)
-		((cCR_CIC*) m_pathListOptimal[i].opposite(this))->receiveFractDist(this);
-	m_state = FRACTSENT;
+	for(int i = 0; i < m_pathListOptimal.size(); i++){
+		cCR_CIC* tmp = (cCR_CIC*) m_pathListOptimal[i].opposite(this);
+		tmp->receiveFractDist(this);
+		for(int j = 0; j < tmp->m_pathListOptimal.size(); j++){
+			((cCR_CIC*) m_pathListOptimal[j].opposite(tmp))->receiveFractDist(this);
+		}
+	}
 
 	while(m_state != RELEASED){
 		msleep(100);
@@ -55,7 +59,7 @@ void cCR_CIC::run() {
 		m_mutex.lock();
 		wait = !m_waitingEnding.empty();
 		m_mutex.unlock();
-		msleep(100);
+		msleep(10);
 	}
 
 	if(m_state == SAVED)
@@ -79,7 +83,7 @@ void cCR_CIC::receiveFractDist(const cCR_CIC* p_cr){
 
 void cCR_CIC::receiveRelease(const cCR* p_cr){
 	m_mutex.lock();
-	m_waitingRelease.removeOne(p_cr);
+	m_waitingRelease.removeAll(p_cr);
 	m_waitingEnding.removeOne(p_cr);
 	m_mutex.unlock();
 }
