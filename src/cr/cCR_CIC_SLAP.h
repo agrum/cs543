@@ -8,45 +8,24 @@
 #ifndef CCR_CIC_SLAP_H_
 #define CCR_CIC_SLAP_H_
 
-#include "cCR.h"
-#include <QSet>
-#include <QMutex>
+#include "cCR_CIC.h"
 
-class cCR_CIC_SLAP : public cCR {
+class cCR_CIC_SLAP : public cCR_CIC {
 
 public:
-	enum state{
-		NONE,
-		FDSENT,
-		RELEASED,
-		SAVED,
-		OPTIMIZED
-	};
-
 	cCR_CIC_SLAP();
 	cCR_CIC_SLAP(const cCR_CIC_SLAP&);
 	cCR_CIC_SLAP& operator=(const cCR_CIC_SLAP&);
 
 	void setPathList(const QList<cLink<cCR*> >&);
-
-	virtual void run();
-
-	void lock();
-	void receiveFractDist(const cCR_CIC_SLAP*);
-	void receiveRelease(cCR*);
+	void receiveFractDist(const cCR_CIC*);
 
 private:
 	void LAP();
-	void LAP2();
-	void final();
 	QList<int> need();
 
 protected:
 	float m_fractDistanceSocial;
-	int m_state;
-	QMutex m_mutex;
-	QSet<const cCR*> m_waitingRelease;
-	QSet<const cCR*> m_waitingEnding;
 };
 
 #endif /* CCR_CIC_SLAP_H_ */
