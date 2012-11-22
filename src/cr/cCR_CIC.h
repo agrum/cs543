@@ -17,6 +17,7 @@ class cCR_CIC : public cCR {
 public:
 	enum state{
 		NONE,
+		FDSENT,
 		RELEASED,
 		SAVED,
 		OPTIMIZED
@@ -29,19 +30,19 @@ public:
 	virtual void run();
 
 	void lock();
-	void receiveFractDist(const cCR_CIC*);
+	virtual void receiveFractDist(const cCR_CIC*);
 	void receiveRelease(const cCR*);
 
 private:
-	void LAP();
+	virtual void LAP();
 	void LAP2();
 	void final();
 
 protected:
 	int m_state;
 	QMutex m_mutex;
-	QList<const cCR*> m_waitingRelease;
-	QList<const cCR*> m_waitingEnding;
+	QSet<const cCR*> m_waitingRelease;
+	QSet<const cCR*> m_waitingEnding;
 };
 
 #endif /* CCR_CIC_H_ */

@@ -37,7 +37,6 @@ protected:
 	QList<cLink<cCR*> > m_pathList;
 	QList<cLink<cCR*> > m_pathListOptimal;
 	QList<cLink<cCR*> > m_pathListFinal;
-	QList<QPair<int, int> > m_storage;
 	float m_fractDistanceOptimal;
 	float m_fractDistanceFinal;
 	int m_phase;

@@ -17,6 +17,7 @@ class cCR_CIC_SLAP : public cCR {
 public:
 	enum state{
 		NONE,
+		FDSENT,
 		RELEASED,
 		SAVED,
 		OPTIMIZED
@@ -44,7 +45,6 @@ protected:
 	float m_fractDistanceSocial;
 	int m_state;
 	QMutex m_mutex;
-	static QMutex m_turn;
 	QSet<const cCR*> m_waitingRelease;
 	QSet<const cCR*> m_waitingEnding;
 };

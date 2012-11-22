@@ -7,8 +7,6 @@
 
 #include "cCR_CIC_SLAP.h"
 
-QMutex cCR_CIC_SLAP::m_turn;
-
 cCR_CIC_SLAP::cCR_CIC_SLAP():
 m_state(NONE)
 {
@@ -36,16 +34,19 @@ void cCR_CIC_SLAP::run() {
 	for(int i = 0; i < m_pathList.size(); i++)
 		m_waitingEnding.insert(m_pathList[i].opposite(this));
 	m_mutex.unlock();
-	/*for(int i = 0; i < m_pathListOptimal.size(); i++){
+	for(int i = 0; i < m_pathListOptimal.size(); i++){
 		cCR_CIC_SLAP* tmp = (cCR_CIC_SLAP*) m_pathListOptimal[i].opposite(this);
 		tmp->receiveFractDist(this);
 		for(int j = 0; j < tmp->m_pathListOptimal.size(); j++){
 			((cCR_CIC_SLAP*) m_pathListOptimal[j].opposite(tmp))->receiveFractDist(this);
 		}
-	}*/
-	for(int i = 0; i < m_pathListOptimal.size(); i++){
-		cCR_CIC_SLAP* tmp = (cCR_CIC_SLAP*) m_pathListOptimal[i].opposite(this);
-		tmp->receiveFractDist(this);
+	}
+	m_state = FDSENT;
+	for(int i = 0; i < m_pathList.size(); i++){
+		if(((cCR_CIC_SLAP*) m_pathList[i].opposite(this))->m_state < FDSENT){
+			i--;
+			msleep(10);
+		}
 	}
 
 	while(m_state != RELEASED){
@@ -60,7 +61,11 @@ void cCR_CIC_SLAP::run() {
 	for(int i = 0; i < m_pathList.size(); i++)
 		((cCR_CIC_SLAP*) m_pathList[i].opposite(this))->receiveRelease(this);
 
-	while(!m_waitingEnding.empty()){
+	bool wait = true;
+	while(wait){
+		m_mutex.lock();
+		wait = !m_waitingEnding.empty();
+		m_mutex.unlock();
 		msleep(10);
 	}
 

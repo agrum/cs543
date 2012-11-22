@@ -32,13 +32,20 @@ cCR_CIC& cCR_CIC::operator=(const cCR_CIC& p_cr){
 
 void cCR_CIC::run() {
 	for(int i = 0; i < m_pathList.size(); i++)
-		m_waitingEnding.push_back(m_pathList[i].opposite(this));
+		m_waitingEnding.insert(m_pathList[i].opposite(this));
 	m_mutex.unlock();
 	for(int i = 0; i < m_pathListOptimal.size(); i++){
 		cCR_CIC* tmp = (cCR_CIC*) m_pathListOptimal[i].opposite(this);
 		tmp->receiveFractDist(this);
 		for(int j = 0; j < tmp->m_pathListOptimal.size(); j++){
 			((cCR_CIC*) m_pathListOptimal[j].opposite(tmp))->receiveFractDist(this);
+		}
+	}
+	m_state = FDSENT;
+	for(int i = 0; i < m_pathList.size(); i++){
+		if(((cCR_CIC*) m_pathList[i].opposite(this))->m_state < FDSENT){
+			i--;
+			msleep(10);
 		}
 	}
 
@@ -76,15 +83,15 @@ void cCR_CIC::lock(){
 void cCR_CIC::receiveFractDist(const cCR_CIC* p_cr){
 	if(p_cr->m_fractDistanceOptimal < m_fractDistanceOptimal){
 		m_mutex.lock();
-		m_waitingRelease.push_back(p_cr);
+		m_waitingRelease.insert(p_cr);
 		m_mutex.unlock();
 	}
 }
 
 void cCR_CIC::receiveRelease(const cCR* p_cr){
 	m_mutex.lock();
-	m_waitingRelease.removeAll(p_cr);
-	m_waitingEnding.removeOne(p_cr);
+	m_waitingRelease.remove(p_cr);
+	m_waitingEnding.remove(p_cr);
 	m_mutex.unlock();
 }
 
