@@ -19,6 +19,7 @@ public:
 		NONE,
 		FDSENT,
 		RELEASED,
+		PAPED,
 		SAVED,
 		OPTIMIZED
 	};
@@ -29,7 +30,10 @@ public:
 
 	virtual void run();
 
+	bool optimized();
 	void lock();
+	void unlock();
+	virtual void sendFractDist();
 	virtual void receiveFractDist(const cCR_CIC*);
 	void receiveRelease(const cCR*);
 
@@ -41,6 +45,7 @@ private:
 protected:
 	int m_state;
 	QMutex m_mutex;
+	QList<cCR_CIC*> m_crList;
 	QSet<const cCR*> m_waitingRelease;
 	QSet<const cCR*> m_waitingEnding;
 };

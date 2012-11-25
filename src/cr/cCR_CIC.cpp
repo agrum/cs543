@@ -33,15 +33,14 @@ cCR_CIC& cCR_CIC::operator=(const cCR_CIC& p_cr){
 void cCR_CIC::run() {
 	for(int i = 0; i < m_pathList.size(); i++)
 		m_waitingEnding.insert(m_pathList[i].opposite(this));
+
+	m_crList += this;
+	for(int i = 0; i < m_pathListOptimal.size(); i++)
+		m_crList += (cCR_CIC*) m_pathList[i].opposite(this);
+
 	m_mutex.unlock();
-	for(int i = 0; i < m_pathListOptimal.size(); i++){
-		cCR_CIC* tmp = (cCR_CIC*) m_pathListOptimal[i].opposite(this);
-		tmp->receiveFractDist(this);
-		for(int j = 0; j < tmp->m_pathListOptimal.size(); j++){
-			((cCR_CIC*) m_pathListOptimal[j].opposite(tmp))->receiveFractDist(this);
-		}
-	}
-	m_state = FDSENT;
+	sendFractDist();
+
 	for(int i = 0; i < m_pathList.size(); i++){
 		if(((cCR_CIC*) m_pathList[i].opposite(this))->m_state < FDSENT){
 			i--;
@@ -69,19 +68,42 @@ void cCR_CIC::run() {
 		msleep(10);
 	}
 
-	if(m_state == SAVED)
-		LAP2();
+	LAP2();
 
 	final();
 	m_configured = true;
+}
+
+bool cCR_CIC::optimized(){
+	return (m_state == OPTIMIZED);
 }
 
 void cCR_CIC::lock(){
 	m_mutex.lock();
 }
 
+void cCR_CIC::unlock(){
+	m_mutex.unlock();
+}
+
+void cCR_CIC::sendFractDist(){
+	for(int i = 0; i < m_pathListOptimal.size(); i++){
+		cCR_CIC* tmp = (cCR_CIC*) m_pathListOptimal[i].opposite(this);
+		tmp->receiveFractDist(this);
+		//receiveFractDist(tmp);
+		for(int j = 0; j < tmp->m_pathListOptimal.size(); j++){
+			((cCR_CIC*) m_pathListOptimal[j].opposite(tmp))->receiveFractDist(this);
+			//receiveFractDist((cCR_CIC*) m_pathListOptimal[j].opposite(tmp));
+		}
+	}
+	m_state = FDSENT;
+}
+
 void cCR_CIC::receiveFractDist(const cCR_CIC* p_cr){
-	if(p_cr->m_fractDistanceOptimal < m_fractDistanceOptimal){
+	if(((cCR_CIC*) p_cr)->m_fractDistanceOptimal < m_fractDistanceOptimal
+			||
+			(((cCR_CIC*) p_cr)->m_fractDistanceOptimal == m_fractDistanceOptimal
+					&& (int) p_cr < (int) this)){
 		m_mutex.lock();
 		m_waitingRelease.insert(p_cr);
 		m_mutex.unlock();
@@ -110,13 +132,16 @@ void cCR_CIC::LAP(){
 		if(crList[i]->m_phase != -1 && phaseList.contains(crList[i]->m_phase))
 			phaseList.removeOne(crList.takeAt(i--)->m_phase);
 		else if(crList[i]->m_phase != -1){
-			m_state = SAVED;
+			m_state = PAPED;
 			return;
 		}
 	}
 
+	usleep(400); //
+
 	for(int i = 0; i < crList.size(); i++)
 		crList[i]->m_phase = phaseList.takeFirst();
+	m_state = PAPED;
 	m_state = OPTIMIZED;
 }
 
@@ -144,7 +169,8 @@ void cCR_CIC::final(){
 		phaseList.push_back(i);
 
 	phaseList.removeOne(m_phase);
-	for(int i = 0; i < m_pathList.size() && phaseList.size() > 0; i++){
+	int i = 0;
+	for(; i < m_pathList.size() && phaseList.size() > 0; i++){
 		cCR_CIC* tmp = (cCR_CIC*)m_pathList[i].opposite(this);
 		if(phaseList.contains(tmp->m_phase)){
 			m_pathListFinal.push_back(m_pathList[i]);
@@ -152,4 +178,8 @@ void cCR_CIC::final(){
 			phaseList.removeOne(tmp->m_phase);
 		}
 	}
+	/*if(i == m_label)
+		m_state = OPTIMIZED;
+	else if(i != m_label)
+		m_state = SAVED;*/
 }
